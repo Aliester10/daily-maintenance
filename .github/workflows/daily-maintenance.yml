@@ -1,0 +1,77 @@
+name: Automated Daily Operations
+
+on:
+  schedule:
+    # 23:00 UTC setara dengan 06:00 WIB (Waktu Indonesia Barat)
+    - cron: "0 23 * * *"
+  # Memungkinkan workflow ini dijalankan secara manual (untuk testing)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  telemetry_sync:
+    name: Telemetry & Status Sync
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1 # Optimasi checkout agar lebih efisien
+
+      - name: 📊 Gather System Telemetry
+        run: |
+          echo "Mengumpulkan metrik dan telemetri sistem..."
+          
+          # Mendapatkan statistik dari runner server untuk memberikan konten yang selalu berubah
+          SYS_UPTIME=$(uptime -p)
+          MEM_FREE=$(free -h | awk '/^Mem:/ {print $4}')
+          DISK_FREE=$(df -h / | awk 'NR==2 {print $4}')
+          CURRENT_DATE=$(date -u +"%A, %d %B %Y - %H:%M:%S UTC")
+          
+          # Membuat format laporan Markdown yang profesional
+          cat <<EOF > TELEMETRY_LOG.md
+          # 📊 Daily Telemetry & Sync Log
+          
+          Dokumen ini di-generate secara otomatis oleh operasi pemeliharaan harian. Tujuan file ini adalah untuk menjaga *heartbeat* repositori dan melacak metrik environment runner.
+          
+          ### ⏱️ Last Synchronization
+          - **Timestamp:** $CURRENT_DATE
+          
+          ### 🖥️ Environment Metrics (Runner Status)
+          - **OS Environment:** Ubuntu Linux (GitHub Actions)
+          - **Server Uptime:** $SYS_UPTIME
+          - **Available Memory:** $MEM_FREE
+          - **Available Storage:** $DISK_FREE
+          
+          ---
+          *Status: All systems operational. 🟢*
+          EOF
+          
+          echo "Laporan telemetri berhasil di-generate."
+
+      - name: 🚀 Commit and Push
+        run: |
+          # =====================================================================
+          # ⚠️ PENTING: Ganti dengan identitas GitHub asli Anda 
+          # Agar kotak hijau di profil Anda terisi, masukkan nama dan email Anda.
+          # =====================================================================
+          git config --global user.name "Aliester10"
+          git config --global user.email "kisjo.official0411@gmail.com"
+          
+          git add TELEMETRY_LOG.md
+          
+          # Mengecek apakah ada perubahan (mencegah error bila file tidak berubah)
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan baru untuk di-commit."
+          else
+            # Format pesan commit dengan gaya Conventional Commits yang profesional
+            COMMIT_MSG="chore(telemetry): automated daily log sync [$(date +'%Y-%m-%d')]"
+            git commit -m "$COMMIT_MSG"
+            
+            # Melakukan push ke repository
+            git push
+            echo "✅ Sinkronisasi harian berhasil disimpan ke repository!"
+          fi
