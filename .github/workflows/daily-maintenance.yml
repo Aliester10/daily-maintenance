@@ -2,8 +2,8 @@ name: Automated Daily Operations
 
 on:
   schedule:
-    # 23:00 UTC setara dengan 06:00 WIB (Waktu Indonesia Barat)
-    - cron: "0 23 * * *"
+    # UJI COBA: Berjalan setiap 5 menit. Nanti akan dikembalikan ke jam 6 pagi.
+    - cron: "*/5 * * * *"
   # Memungkinkan workflow ini dijalankan secara manual (untuk testing)
   workflow_dispatch:
 
