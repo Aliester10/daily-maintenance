@@ -2,8 +2,8 @@ name: Automated Daily Operations
 
 on:
   schedule:
-    # UJI COBA: Berjalan setiap 5 menit. Nanti akan dikembalikan ke jam 6 pagi.
-    - cron: "*/5 * * * *"
+    # 23:17 UTC setara dengan 06:17 WIB. Menggunakan menit 17 untuk menghindari antrean server GitHub di menit 00.
+    - cron: "17 23 * * *"
   # Memungkinkan workflow ini dijalankan secara manual (untuk testing)
   workflow_dispatch:
 
